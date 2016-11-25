@@ -512,10 +512,13 @@ class Meta(MetaDict):
             if '[*]' not in expression:
                 # ['x'][0]['z'] => meta['x'][0]['z']
                 return eval('meta' + expression)
-            else:
+            elif(expression.count('[*]')==1):
                 # ['columns'][*]['name'] => [meta['columns'][i]['name']]
                 prefix, postfix = expression.split('[*]', 2)
                 return [eval('item' + postfix) for item in eval('meta' + prefix + '.values()')]
+            else:
+            	prefix, middlefix, postfix = expression.split('[*]',3)
+            	return [eval('item' + middlefix + postfix) for item in eval('meta'+ prefix + '.values()' )]
         except Exception as e:
             logging.exception('Error in expression %s', expression)
             return None
@@ -534,7 +537,17 @@ class Meta(MetaDict):
                         # If the expression returns a list, write values one below another
                         if isinstance(value, list):
                             for index in range(len(value)):
-                                sheet.cell(row=i + 1 + index, column=j + 1).value = value[index]
+                            	#import pdb
+                            	#pdb.set_trace()
+                            	if(isinstance(value[index], dict)):
+                            		#series.tolist(value[index])
+                            		value[index] =list(value[index])
+                            		j1 = j + 1
+                            		for k in range(len(value[index])):
+                            			sheet.cell(row=i + 1 + index, column=j1).value = value[index][k]
+                            			j1 = j1 + 1
+                            	else:
+                            		sheet.cell(row=i + 1 + index, column=j + 1).value = value[index]
                         # If expression returns a single value, use it as is
                         elif value is not None:
                             cell.value = value
@@ -638,7 +651,7 @@ def chunked(method, chunksize):
     return wrapped
 
 
-MAX_ROWS = 10000
+MAX_ROWS = 100000
 read_csv_encoded = read_encoded(pd.read_csv)
 read_stata_encoded = read_encoded(pd.read_stata)
 _preview_command = {
