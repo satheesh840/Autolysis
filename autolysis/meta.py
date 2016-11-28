@@ -508,20 +508,17 @@ class Meta(MetaDict):
         # Find the value of the Python expression in the cell.
         # If the expression contains a [*] we treat it as a list enumeration.
         expression = expression.strip().lstrip('#').strip()
-        try:
-            if '[*]' not in expression:
-                # ['x'][0]['z'] => meta['x'][0]['z']
-                return eval('meta' + expression)
-            elif(expression.count('[*]')==1):
-                # ['columns'][*]['name'] => [meta['columns'][i]['name']]
-                prefix, postfix = expression.split('[*]', 2)
-                return [eval('item' + postfix) for item in eval('meta' + prefix + '.values()')]
-            else:
-            	prefix, middlefix, postfix = expression.split('[*]',3)
-            	return [eval('item' + middlefix + postfix) for item in eval('meta'+ prefix + '.values()' )]
-        except Exception as e:
-            logging.exception('Error in expression %s', expression)
-            return None
+        #try:
+        if '[*]' not in expression:
+            # ['x'][0]['z'] => meta['x'][0]['z']
+            return eval('meta' + expression)
+        elif(expression.count('[*]')==1):
+            # ['columns'][*]['name'] => [meta['columns'][i]['name']]
+            prefix, postfix = expression.split('[*]', 2)
+            return [eval('item' + postfix) for item in eval('meta' + prefix + '.values()')]
+        #except Exception as e:
+        #    logging.exception('Error in expression %s', expression)
+        #    return None
 
     def to_excel(self, target_file, template=None):
         # Loop through the excel sheet and find every cell that begins with //
